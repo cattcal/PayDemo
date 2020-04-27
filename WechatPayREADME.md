@@ -1,10 +1,10 @@
 # Android微信支付集成，准备工作
 
-### 1.微信开放平台 注册，获取APP ID等信息
+### 1. 微信开放平台 注册，获取APP ID等信息
 
    应用签名的获取:
 
-### 2.Android端集成
+### 2. Android端集成
 
   - 在app build.gradle下添加以下依赖：
   
