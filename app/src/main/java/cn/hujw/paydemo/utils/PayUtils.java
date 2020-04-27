@@ -146,6 +146,18 @@ public class PayUtils {
         api.sendReq(payRequest);
     }
 
+    /**
+     * 判断微信是否安装
+     * @param context
+     * @return true 已安装   false 未安装
+     */
+    public  static boolean isWxAppInstalled(Context context) {
+        IWXAPI wxApi = WXAPIFactory.createWXAPI(context, null);
+        wxApi.registerApp(Constant.WX_PAY_APP_ID);
+        boolean bIsWXAppInstalled = false;
+        bIsWXAppInstalled = wxApi.isWXAppInstalled();
+        return bIsWXAppInstalled;
+    }
 
     /**
      * 阿里支付接口回调
