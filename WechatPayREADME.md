@@ -14,7 +14,7 @@
     这里需要注意WXPayEntryActivity 路径必须为：绑定的商户应用包名 + wxapi + WXPayEntryActivity，
     比如：我在微信开发平台注册包名为：com.example.wx ，
 
-    [点击查看WXPayEntryActivity类.](https://github.com/cattcal/PayDemo/blob/master/app/src/main/java/cn/hujw/paydemo/wxapi/WXPayEntryActivity.java)
+    [点击查看WXPayEntryActivity.](https://github.com/cattcal/PayDemo/blob/master/app/src/main/java/cn/hujw/paydemo/wxapi/WXPayEntryActivity.java)
     
   - 权限声明，我们需要在AndroidManifest.xml中添加权限
   
@@ -120,6 +120,57 @@
         api.sendReq(payRequest);
     }
    ```
+   - 编写WxPayBean实体类(请求参数的实体类, [点击查看WxPayBean.](https://github.com/cattcal/PayDemo/blob/master/app/src/main/java/cn/hujw/paydemo/bean/WxPayBean.java))如下所示:
+   
+   ```
+   public class WxPayBean {
+    private String appid; //微信开放平台审核通过的应用APPID
+    private String partnerid; //微信支付分配的商户号
+    private String prepayid; //微信返回的支付交易会话ID
+    //        private String package;// 扩展字段 暂填写固定值Sign=WXPay
+    private String noncestr; //随机字符串,随机字符串，不长于32位。推荐随机数生成算法
+    private String sign; //签名，详见签名生成算法注意：签名方式一定要与统一下单接口使用的一致
+    private String timestamp; //时间戳，请见接口规则-参数规定
+   
+    ...
+    
+}
+   ```
+   
+   - 微信接口回调在 {@link WXPayEntryActivity#onResp(BaseResp)} 中，具体请查看[点击查看WXPayEntryActivity.](https://github.com/cattcal/PayDemo/blob/master/app/src/main/java/cn/hujw/paydemo/wxapi/WXPayEntryActivity.java)
+   
+   ```
+     /**
+     * 处理结果的回调
+     *
+     * @param resp
+     */
+    @Override
+    public void onResp(BaseResp resp) {
+        Log.d(TAG, "onPayFinish, errCode = " + resp.errCode);
+
+        if (resp.getType() == ConstantsAPI.COMMAND_PAY_BY_WX) {
+
+            switch (resp.errCode) {
+                case 0://支付成功
+                    Toast.makeText(this, "支付成功", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onResp: resp.errCode = 0   支付成功");
+                    break;
+                case -1://错误，可能的原因：签名错误、未注册APPID、项目设置APPID不正确、注册的APPID与设置的不匹配、其他异常等
+                    Toast.makeText(this, "支付错误" + resp.errCode, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onResp: resp.errCode = -1  支付错误");
+                    break;
+                case -2://用户取消，无需处理。发生场景：用户不支付了，点击取消，返回APP。
+                    Log.d(TAG, "onResp: resp.errCode = -2  用户取消");
+                    Toast.makeText(this, "用户取消" + resp.errCode, Toast.LENGTH_SHORT).show();
+                    break;
+
+            }
+
+            finish();//这里需要关闭该页面
+        }
+    }
+   ```
    
    # 注意
    
@@ -137,7 +188,7 @@
       
       如图：
       
-   检测是否安装微信App代码如下：
+  检测是否安装微信App代码如下：
    
    ```
      /**
