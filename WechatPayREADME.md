@@ -12,7 +12,7 @@
 
   - 接收微信回调我们需要一个WXPayEntryActivity，目录如下图，推荐直接拷贝项目demo中的类，
     这里需要注意WXPayEntryActivity 路径必须为：绑定的商户应用包名 + wxapi + WXPayEntryActivity，
-    比如：我在微信开发平台注册包名为：com.example.wx ，
+    比如：我在微信开发平台注册包名为："cn.hujw.paydemo"
 
     [点击查看WXPayEntryActivity.](https://github.com/cattcal/PayDemo/blob/master/app/src/main/java/cn/hujw/paydemo/wxapi/WXPayEntryActivity.java)
     
