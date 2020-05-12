@@ -3,7 +3,7 @@
 
     <string name="pay_success">支付成功:</string>
     <string name="pay_failed">支付失败:</string>
-    <string name="error_missing_appid_rsa_private">错误: 需要配置 PayDemoActivity 中的 APPID 和 RSA_PRIVATE</string>
+    <string name="error_missing_appid_rsa_private">错误: 需要配置 MainActivity 中的 APPID</string>
     <string name="confirm">确认</string>
 
 </resources>

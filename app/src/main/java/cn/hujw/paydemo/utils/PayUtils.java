@@ -155,6 +155,13 @@ public class PayUtils {
 
 
     public void aliAuth(final AliAuthBean aliAuthBean) {
+        if (TextUtils.isEmpty(aliAuthBean.getAuthId())) return;
+
+        if (TextUtils.isEmpty(Constant.ALI_APPID)) {
+            showAlert(activity, activity.getString(R.string.error_missing_appid_rsa_private));
+            return;
+        }
+
         Runnable authRunnable = new Runnable() {
 
             @Override
