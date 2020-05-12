@@ -2,16 +2,17 @@ package cn.hujw.paydemo.bean;
 
 public class AliPayBean {
 
-    private String orderstring;
+    private String orderInfo;
 
     private String orderid;
 
-    public String getOrderstring() {
-        return orderstring;
+
+    public String getOrderInfo() {
+        return orderInfo;
     }
 
-    public void setOrderstring(String orderstring) {
-        this.orderstring = orderstring;
+    public void setOrderInfo(String orderInfo) {
+        this.orderInfo = orderInfo;
     }
 
     public String getOrderid() {

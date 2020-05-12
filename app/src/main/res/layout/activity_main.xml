@@ -8,9 +8,9 @@
 
     <Button
         android:id="@+id/btn_wechat_pay"
-        android:layout_width="100dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Wechat Pay"
+        android:text="微信支付"
         android:textAllCaps="false"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -18,12 +18,33 @@
 
     <Button
         android:id="@+id/btn_ali_pay"
-        android:layout_width="100dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ali Pay"
+        android:text="支付宝支付"
         android:textAllCaps="false"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_wechat_pay" />
+
+
+    <Button
+        android:id="@+id/btn_ali_auth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="支付宝授权"
+        android:textAllCaps="false"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_ali_pay" />
+
+    <Button
+        android:id="@+id/btn_get_ali_sdk_version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="获取支付宝 SDK 版本号"
+        android:textAllCaps="false"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_ali_auth" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

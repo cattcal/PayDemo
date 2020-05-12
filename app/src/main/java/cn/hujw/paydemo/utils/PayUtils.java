@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.alipay.sdk.app.AuthTask;
 import com.alipay.sdk.app.PayTask;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
@@ -23,6 +24,9 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
+import cn.hujw.paydemo.bean.AliAuthBean;
+import cn.hujw.paydemo.bean.AuthAliResultBean;
+import cn.hujw.paydemo.bean.AuthResult;
 import cn.hujw.paydemo.bean.PayResult;
 import cn.hujw.paydemo.R;
 import cn.hujw.paydemo.bean.AliPayBean;
@@ -33,6 +37,7 @@ import cn.hujw.paydemo.common.Constant;
 public class PayUtils {
 
     private static final int SDK_PAY_FLAG = 1;
+    private static final int SDK_AUTH_FLAG = 2;
 
     private Activity activity;
 
@@ -69,6 +74,35 @@ public class PayUtils {
                         Toast.makeText(activity, R.string.pay_failed, Toast.LENGTH_SHORT).show();
                     }
                 }
+                break;
+
+                case SDK_AUTH_FLAG: {
+                    AuthAliResultBean authAliResultBean = (AuthAliResultBean) msg.obj;
+                    AuthResult authResult = authAliResultBean.getAuthResult();
+
+                    /**
+                     * 对于授权结果，请商户依赖服务端的异步通知结果。同步通知结果，仅作为授权结束的通知。
+                     */
+                    String resultInfo = authResult.getResult(); // 同步返回需要验证的信息
+                    String resultStatus = authResult.getResultStatus();
+
+                    // 判断resultStatus 为“9000”且result_code
+                    // 为“200”则代表授权成功，具体状态码代表含义可参考授权接口文档
+                    if (TextUtils.equals(resultStatus, "9000") && TextUtils.equals(authResult.getResultCode(), "200")) {
+                        // 获取alipay_open_id，调支付时作为参数extern_token 的value
+                        // 传入，则支付账户为该授权账户
+                        if (null != mAliAuthResultListener) {
+                            mAliAuthResultListener.aliAuthSuccess();
+                        }
+                    } else {
+                        // 其他状态值则为授权失败
+                        if (null != mAliAuthResultListener) {
+                            mAliAuthResultListener.aliAuthCancel();
+                        }
+
+                    }
+                }
+                break;
             }
 
         }
@@ -76,6 +110,7 @@ public class PayUtils {
 
     /**
      * 使用支付宝支付
+     *
      * @param aliPayBean
      */
     public void aliPay(final AliPayBean aliPayBean) {
@@ -91,7 +126,7 @@ public class PayUtils {
             @Override
             public void run() {
                 PayTask alipay = new PayTask(activity);
-                Map<String, String> result = alipay.payV2(aliPayBean.getOrderstring(), true);
+                Map<String, String> result = alipay.payV2(aliPayBean.getOrderInfo(), true);
                 Log.i("msp", result.toString());
 
 
@@ -101,7 +136,7 @@ public class PayUtils {
 
                 try {
                     JSONObject jsonObject = new JSONObject(payAliResultBean.getPayResult().getResult());
-                    Log.d("PayUtils", "支付宝返回结果" + jsonObject.toString());
+                    Log.d("PayUtils", "支付宝支付返回结果" + jsonObject.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -116,6 +151,50 @@ public class PayUtils {
         // 必须异步调用
         Thread payThread = new Thread(payRunnable);
         payThread.start();
+    }
+
+
+    public void aliAuth(final AliAuthBean aliAuthBean) {
+        Runnable authRunnable = new Runnable() {
+
+            @Override
+            public void run() {
+                // 构造AuthTask 对象
+                AuthTask authTask = new AuthTask(activity);
+                // 调用授权接口，获取授权结果
+                Map<String, String> result = authTask.authV2(aliAuthBean.getAuthInfo(), true);
+
+                AuthAliResultBean authAliResultBean = new AuthAliResultBean();
+                authAliResultBean.setAuthResult(new AuthResult(result, true));
+                authAliResultBean.setAuthid(aliAuthBean.getAuthId());
+
+                try {
+                    JSONObject jsonObject = new JSONObject(authAliResultBean.getAuthResult().getResult());
+                    Log.d("PayUtils", "支付宝授权返回结果" + jsonObject.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                Message msg = new Message();
+                msg.what = SDK_AUTH_FLAG;
+                msg.obj = authAliResultBean;
+                mHandler.sendMessage(msg);
+            }
+        };
+
+        // 必须异步调用
+        Thread authThread = new Thread(authRunnable);
+        authThread.start();
+    }
+
+
+    /**
+     * 获取支付宝 SDK 版本号。
+     */
+    public String getAliSdkVersion() {
+        PayTask payTask = new PayTask(activity);
+        String version = payTask.getVersion();
+        return version;
     }
 
 
@@ -148,10 +227,11 @@ public class PayUtils {
 
     /**
      * 判断微信是否安装
+     *
      * @param context
      * @return true 已安装   false 未安装
      */
-    public  static boolean isWxAppInstalled(Context context) {
+    public static boolean isWxAppInstalled(Context context) {
         IWXAPI wxApi = WXAPIFactory.createWXAPI(context, null);
         wxApi.registerApp(Constant.WX_PAY_APP_ID);
         boolean bIsWXAppInstalled = false;
@@ -174,17 +254,36 @@ public class PayUtils {
         void aliPayCancel();
     }
 
-    private AliPayResultListener mAliPayResultListener;
 
-    public AliPayResultListener getAliPayResultListener() {
-        return mAliPayResultListener;
+    /**
+     * 阿里授权接口回调
+     */
+    public interface AliAuthResultListener {
+        /**
+         * 完成授权
+         */
+        void aliAuthSuccess();
+
+        /**
+         * 取消授权
+         */
+        void aliAuthCancel();
     }
+
+    private AliAuthResultListener mAliAuthResultListener;
+
+    public void setAliAuthResultListener(AliAuthResultListener aliAuthResultListener) {
+        mAliAuthResultListener = aliAuthResultListener;
+    }
+
+    private AliPayResultListener mAliPayResultListener;
 
     public void setAliPayResultListener(AliPayResultListener aliPayResultListener) {
         mAliPayResultListener = aliPayResultListener;
     }
 
     public void release() {
+        //当参数为null时,删除所有回调函数和message
         mHandler.removeCallbacksAndMessages(null);
     }
 

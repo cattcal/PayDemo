@@ -3,24 +3,28 @@ package cn.hujw.paydemo;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.tencent.mm.opensdk.openapi.IWXAPI;
-import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
+import cn.hujw.paydemo.bean.AliAuthBean;
 import cn.hujw.paydemo.bean.AliPayBean;
 import cn.hujw.paydemo.bean.WxPayBean;
 import cn.hujw.paydemo.utils.PayUtils;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, PayUtils.AliPayResultListener {
+/**
+ * 支付示例
+ */
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, PayUtils.AliPayResultListener, PayUtils.AliAuthResultListener {
 
     private PayUtils mPayUtils;
 
     private Button mWechatPayView;
     private Button mAliPayView;
+
+    private Button mAliAuthView;
+    private Button mGetALiSdkVersionView;
 
 
     @Override
@@ -28,28 +32,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        //初始化View
         initView();
 
-        initData();
-
+        //设置监听事件
         setListener();
 
     }
 
-    private void initData() {
-        mPayUtils = new PayUtils(this);
-    }
-
+    /**
+     * 设置监听事件
+     */
     private void setListener() {
         mWechatPayView.setOnClickListener(this);
         mAliPayView.setOnClickListener(this);
+        mAliAuthView.setOnClickListener(this);
+        mGetALiSdkVersionView.setOnClickListener(this);
+
+        //支付宝支付回调
+        mPayUtils.setAliPayResultListener(this);
+        //支付宝授权回调
+        mPayUtils.setAliAuthResultListener(this);
+
 
     }
 
+    /**
+     * 初始化View
+     */
     private void initView() {
         mWechatPayView = findViewById(R.id.btn_wechat_pay);
         mAliPayView = findViewById(R.id.btn_ali_pay);
+        mAliAuthView = findViewById(R.id.btn_ali_auth);
+        mGetALiSdkVersionView = findViewById(R.id.btn_get_ali_sdk_version);
+
+        mPayUtils = new PayUtils(this);
+
     }
 
     @Override
@@ -59,19 +77,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mPayUtils.wechatPay(new WxPayBean());
                 break;
             case R.id.btn_ali_pay:
-                Log.e("TAG","ali pay button");
                 mPayUtils.aliPay(new AliPayBean());
+                break;
+            case R.id.btn_ali_auth:
+                mPayUtils.aliAuth(new AliAuthBean());
+                break;
+            case R.id.btn_get_ali_sdk_version:
+                Toast.makeText(this, mPayUtils.getAliSdkVersion(), Toast.LENGTH_SHORT).show();
                 break;
         }
     }
 
     @Override
     public void aliPaySuccess() {
-        Toast.makeText(this,"支付成功",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "支付成功", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void aliPayCancel() {
-        Toast.makeText(this,"取消支付",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "取消支付", Toast.LENGTH_SHORT).show();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //避免内存泄露
+        mPayUtils.release();
+    }
+
+    @Override
+    public void aliAuthSuccess() {
+        Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void aliAuthCancel() {
+        Toast.makeText(this, "取消成功", Toast.LENGTH_SHORT).show();
     }
 }
