@@ -74,15 +74,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_wechat_pay:
+                //调起微信支付
                 mPayUtils.wechatPay(new WxPayBean());
                 break;
             case R.id.btn_ali_pay:
+                //调起支付宝支付
                 mPayUtils.aliPay(new AliPayBean());
                 break;
             case R.id.btn_ali_auth:
+                //调起支付宝授权
                 mPayUtils.aliAuth(new AliAuthBean());
                 break;
             case R.id.btn_get_ali_sdk_version:
+                //获取支付宝SDK版本号
                 Toast.makeText(this, mPayUtils.getAliSdkVersion(), Toast.LENGTH_SHORT).show();
                 break;
         }

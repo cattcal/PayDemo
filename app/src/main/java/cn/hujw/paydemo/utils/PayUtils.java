@@ -154,6 +154,10 @@ public class PayUtils {
     }
 
 
+    /**
+     * 支付宝授权
+     * @param aliAuthBean
+     */
     public void aliAuth(final AliAuthBean aliAuthBean) {
         if (TextUtils.isEmpty(aliAuthBean.getAuthId())) return;
 
